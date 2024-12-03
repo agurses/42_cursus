@@ -6,7 +6,7 @@
 /*   By: agurses <agurses@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/03 17:51:09 by agurses           #+#    #+#             */
-/*   Updated: 2024/12/03 20:37:33 by agurses          ###   ########.fr       */
+/*   Updated: 2024/12/03 21:51:32 by agurses          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,12 +92,12 @@ void	ft_puthexp(unsigned long hex, unsigned int *counter)
 		if ((hex % 16) < 10)
 			ft_putnbr((hex % 16) - 10, counter);
 		else
-			*counter += write(1, &wrt[(hex % 16) - 10], 1);
+			*counter += write(1, &wrt[hex % 16 - 10], 1);
 		return ;
 	}
 	ft_puthexp(hex / 16, counter);
-	if ((hex % 16) < 10)
-		ft_putnbr(hex % 16, counter);
+	if (hex % 16 < 10)
+		ft_putnbr((hex % 16), counter);
 	else
-		*counter += write(1, &wrt[(hex % 16) - 10], 1);
+		*counter += write(1, &wrt[hex % 16 - 10], 1);
 }
