@@ -6,7 +6,7 @@
 /*   By: agurses <agurses@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/03 17:51:09 by agurses           #+#    #+#             */
-/*   Updated: 2024/12/03 21:51:32 by agurses          ###   ########.fr       */
+/*   Updated: 2024/12/05 18:08:56 by agurses          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,11 +55,15 @@ void	ft_putnbr(int n, unsigned int *counter)
 
 void	ft_putunbr(unsigned int n, unsigned int *counter)
 {
+	char	res;
+
 	if (n > 9)
-		ft_putnbr(n, counter);
+		ft_putunbr(n / 10, counter);
+	res = (n % 10) + '0';
+	*counter += write(1, &res, 1);
 }
 
-void	ft_puthex(unsigned int hex, char uppercase, unsigned int *counter)
+void	ft_puthex(unsigned long hex, char uppercase, unsigned int *counter)
 {
 	char	*wrt;
 
@@ -84,20 +88,14 @@ void	ft_puthex(unsigned int hex, char uppercase, unsigned int *counter)
 
 void	ft_puthexp(unsigned long hex, unsigned int *counter)
 {
-	char	*wrt;
-
-	wrt = "abcdef";
-	if ((hex / 16) == 0)
+	if (hex == 0)
 	{
-		if ((hex % 16) < 10)
-			ft_putnbr((hex % 16) - 10, counter);
-		else
-			*counter += write(1, &wrt[hex % 16 - 10], 1);
+		*counter += write(1, "(nil)", 5);
 		return ;
 	}
-	ft_puthexp(hex / 16, counter);
-	if (hex % 16 < 10)
-		ft_putnbr((hex % 16), counter);
 	else
-		*counter += write(1, &wrt[hex % 16 - 10], 1);
+	{
+		ft_putstr("0x", counter);
+		ft_puthex(hex, 'x', counter);
+	}
 }

@@ -6,7 +6,7 @@
 /*   By: agurses <agurses@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/03 17:51:06 by agurses           #+#    #+#             */
-/*   Updated: 2024/12/03 21:11:59 by agurses          ###   ########.fr       */
+/*   Updated: 2024/12/05 18:09:20 by agurses          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,7 @@ void	ft_flags(const char *str, va_list args, unsigned int *counter)
 	else if (*str == 'x' || *str == 'X')
 		ft_puthex(va_arg(args, unsigned int), *str, counter);
 	else if (*str == 'p')
-	{
-		ft_putstr("0x", counter);
 		ft_puthexp(va_arg(args, unsigned long), counter);
-	}
 }
 
 int	ft_printf(const char *str, ...)

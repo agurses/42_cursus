@@ -6,7 +6,7 @@
 #    By: agurses <agurses@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/12/03 17:50:58 by agurses           #+#    #+#              #
-#    Updated: 2024/12/03 20:57:05 by agurses          ###   ########.fr        #
+#    Updated: 2024/12/05 18:12:29 by agurses          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,8 +20,8 @@ FLAGS = -c -Wall -Wextra -Werror
 OBJS = $(SRCS:.c=.o)
 
 $(NAME): $(OBJS)
-	gcc $(FLAGS) $(SRCS)
-	ar -rcs $(NAME) $(OBJS)
+	cc $(FLAGS) $(SRCS)
+	ar -rc $(NAME) $(OBJS)
 
 all : $(NAME)
 
