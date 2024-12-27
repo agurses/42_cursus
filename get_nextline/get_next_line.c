@@ -39,6 +39,8 @@ char	*ft_next(char *buffer)
 	}
 
 	line = ft_calloc((ft_strlen(buffer) - i + 1), sizeof(char));
+	if(!line)
+		free(line);
 	i++;
 	j = 0;
 
@@ -93,10 +95,11 @@ char	*read_file(int fd, char *res)
 		if (byte_read == -1)
 		{
 			free(buffer);
+			free(res);
 			return (NULL);
 		}
 
-		buffer[byte_read] = 0;
+		buffer[byte_read] = '\0';
 
 		res = ft_free(res, buffer);
 	
@@ -117,7 +120,11 @@ char	*get_next_line(int fd)
 		return (NULL);
 	buffer = read_file(fd, buffer);
 	if (!buffer)
-		return (NULL);
+	{
+		free(buffer);
+        buffer = NULL;
+        return (NULL);
+	}
 	line = ft_line(buffer);
 	buffer = ft_next(buffer);
 	return (line);
