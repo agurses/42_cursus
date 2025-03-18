@@ -51,8 +51,9 @@ void	ft_lstadd_back(t_list **lst, t_list *new);
 void	ft_lstadd_front(t_list **lst, t_list *new);
 t_list	*ft_lstlast(t_list *lst);
 t_list	*ft_lstnew(int content);
-int		ft_atoi_swap(const char *str);
-void	error();
+long		ft_atoi_swap(const char *str);
 void 	ft_write_error(char *str);
+void	free_list(t_list *lst);
+void	free_split(char **split);
 
 #endif

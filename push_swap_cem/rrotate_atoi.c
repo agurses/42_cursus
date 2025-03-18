@@ -45,7 +45,7 @@ void	rrr(t_tab *str)
 	rra(str);
 	rrb(str);
 }
-int	ft_atoi_swap(const char *str)
+long	ft_atoi_swap(const char *str)
 {
 	int					i;
 	int					sign;
@@ -68,12 +68,6 @@ int	ft_atoi_swap(const char *str)
 	}
 	if ((result > 2147483648 && sign == -1)
 		|| (result > 2147483647 && sign == 1))
-		error();
+		return (2147483649);
 	return (result * sign);
-}
-void	error()
-{
-
-	write(2, "Error\n", 6);
-	exit(1);
 }
