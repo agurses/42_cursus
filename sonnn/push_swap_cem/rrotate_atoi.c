@@ -16,7 +16,6 @@ void	rra(t_tab *str)
 	tmp->next = (str->a);
 	tmp2->next = NULL;
 	str->a = tmp;
-	str->prcscount++;
 	printf("%s\n", "rra");
 }
 
@@ -36,7 +35,6 @@ void	rrb(t_tab *str)
 	tmp->next = (str->b);
 	tmp2->next = NULL;
 	str->b = tmp;
-	str->prcscount++;
 	printf("%s\n", "rrb");
 }
 

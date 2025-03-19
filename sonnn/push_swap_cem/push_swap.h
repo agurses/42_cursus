@@ -19,7 +19,6 @@ typedef struct tab
 	int		size_b;
 	int		halfa;
 	int		halfb;
-	int		prcscount;
 }	t_tab;
 
 void	sa(t_tab *str);
@@ -43,17 +42,21 @@ int		check_sorted_a(t_tab *str, int len);
 int		check_sorted_b(t_tab *str, int len);
 void	sort_for_three(t_tab *str, int len);
 void	sort_for_three_b(t_tab *str, int len);
-int		sort_b(t_tab *str, int len);
-int		sort_main(t_tab *str, int len);
+int		sort_b(t_tab *str, int len, int halfb, int countb);
+int		sort_main(t_tab *str, int len, int halfa);
 void	printList(t_list *head);
 int		ft_lstsize(t_list *head);
 void	ft_lstadd_back(t_list **lst, t_list *new);
 void	ft_lstadd_front(t_list **lst, t_list *new);
 t_list	*ft_lstlast(t_list *lst);
 t_list	*ft_lstnew(int content);
-long		ft_atoi_swap(const char *str);
+long	ft_atoi_swap(const char *str);
 void 	ft_write_error(char *str);
 void	free_list(t_list *lst);
 void	free_split(char **split);
+int		is_valid_number(char *arg, t_tab *str, int ac);
+void	for_index(int index, t_tab *str);
+void	for_index_b(t_tab *str, int index, int i);
+int		check_push(int len, t_tab *str);
 
 #endif

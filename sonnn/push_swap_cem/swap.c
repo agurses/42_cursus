@@ -16,7 +16,6 @@ void	sa(t_tab *str)
 	str->a = str->a->next;
 	tmp->next = str->a->next;
 	str->a->next = tmp;
-	str->prcscount++;
 	printf("%s\n", "sa");
 }
 
@@ -30,6 +29,5 @@ void	sb(t_tab *str)
 	str->b = str->b->next;
 	tmp->next = str->b->next;
 	str->b->next = tmp;
-	str->prcscount++;
 	printf("%s\n", "sb");
 }

@@ -26,21 +26,6 @@ int	check(int nbr, t_list *lst, char *arg)
 	return (1);
 }
 
-int	is_valid_number(char *str)
-{
-	if (!str || !*str)
-		return (0);
-	if (*str == '-' || *str == '+')
-		str++;
-	while (*str)
-	{
-		if (!ft_isdigit(*str))
-			return (0);
-		str++;
-	}
-	return (1);
-}
-
 t_list	*ft_create_list(char **arg, int ac, t_tab *str)
 {
 	t_list	*tmp;
@@ -50,17 +35,9 @@ t_list	*ft_create_list(char **arg, int ac, t_tab *str)
 
 	i = 0;
 	lst = NULL;
-	if (!is_valid_number(arg[0]))
-	{
-		if (ac == 2)
-			free_split(arg);
-		free(str);
-		write(2, "Error\n", 6);
-		exit(1);
-	}
+	is_valid_number(arg[0], str, ac);
 	while (arg[i])
 	{
-
 		nbr = ft_atoi_swap(arg[i]);
 		if (((lst != NULL) && (check(nbr, lst, arg[i]) == 0)) || nbr == 2147483649)
 		{
@@ -78,20 +55,6 @@ t_list	*ft_create_list(char **arg, int ac, t_tab *str)
 	return (lst);
 }
 
-void	free_list(t_list *lst)
-{
-	t_list	*tmp;
-
-	if (!lst)
-		return ;
-	while (lst)
-	{
-		tmp = lst;
-		lst = lst->next;
-		free(tmp);
-	}
-}
-
 void	free_split(char **split)
 {
     int	i;
@@ -107,15 +70,17 @@ void	free_split(char **split)
     free(split);
 }
 
-void	print_list(t_list *lst)
+void	free_list(t_list *lst)
 {
 	t_list	*tmp;
 
-	tmp = lst;
-	while (tmp)
+	if (!lst)
+		return ;
+	while (lst)
 	{
-		printf("%d\n", tmp->content);
-		tmp = tmp->next;
+		tmp = lst;
+		lst = lst->next;
+		free(tmp);
 	}
 }
 
@@ -135,14 +100,12 @@ int	main(int ac, char **av)
 	if (ac == 2)
 		free_split(av);
 	if (str->a == NULL)
-		{
-			free(str);
-			return (-1);
-		}
-	str->prcscount = 0;
+	{
+		free(str);
+		return (-1);
+	}
 	str->b = NULL;
 	str->size_a = ft_lstsize(str->a);
-	str->size_b = 0;
 	sort(str, str->size_a);
 	free_list(str->a);
 	free_list(str->b);

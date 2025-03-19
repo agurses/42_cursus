@@ -1,7 +1,7 @@
 NAME = push_swap
 LIBFT = libft/libft.a
 
-SRC_FILES = main.c sort.c sort2.c push_rotate.c rrotate_atoi.c swap.c libftbonus.c check.c
+SRC_FILES = main.c sort.c sort2.c push_rotate.c rrotate_atoi.c swap.c libftbonus.c utils.c
 OBJ = $(SRC_FILES:.c=.o)
 CC = gcc
 CFLAGS = -Wall -Werror -Wextra -g

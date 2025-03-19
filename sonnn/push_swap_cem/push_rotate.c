@@ -14,7 +14,6 @@ void	ra(t_tab *str)
 	while (tmp2->next)
 		tmp2 = tmp2->next;
 	tmp2->next = tmp;
-	str->prcscount++;
 	printf("%s\n", "ra");
 }
 
@@ -32,7 +31,6 @@ void	rb(t_tab *str)
 	while (tmp2->next)
 		tmp2 = tmp2->next;
 	tmp2->next = tmp;
-	str->prcscount++;
 	printf("%s\n", "rb");
 }
 
@@ -54,7 +52,6 @@ void	pa(t_tab *str)
 	str->b = tmp;
 	str->size_a++;
 	str->size_b--;
-	str->prcscount++;
 	printf("%s\n", "pa");
 }
 
@@ -70,6 +67,5 @@ void	pb(t_tab *str)
 	str->a = tmp;
 	str->size_b++;
 	str->size_a--;
-	str->prcscount++;
 	printf("%s\n", "pb");
 }
