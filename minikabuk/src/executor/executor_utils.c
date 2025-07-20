@@ -53,11 +53,11 @@ void	ft_cd_back_start(t_minishell *minishell)
 	}
 	if (!home)
 	{
-		printf("minishell: cd: HOME not set\n");
+		error_msg("cd: HOME not set", NULL, 1);
 		return;
 	}
 	if (chdir(home))
-		perror("minishell: cd");
+		error_errno("cd", 1);
 }
 
 char	*find_home(t_minishell *minishell)
@@ -91,7 +91,7 @@ static int	ft_cd_back_one(char *cwd, char *new_path, t_minishell *minishell)
 	new_path = ft_strdup("");
 	if (!home)
 	{
-		printf("minishell: cd: HOME not set\n");
+		error_msg("cd: HOME not set", NULL, 1);
 		free(cwd);
 		return (1);
 	}
@@ -108,7 +108,7 @@ static int	ft_cd_back_one(char *cwd, char *new_path, t_minishell *minishell)
 		return (1);
 	if (chdir(new_path))
 	{
-		printf("minishell: cd: %s: No such file or directory\n", new_path);
+		error_msg("cd: No such file or directory", new_path, 1);
 		free(new_path);
 		return(1);
 	}
@@ -124,7 +124,7 @@ static int	ft_go_path(char *cwd, char *new_path, char *current_token)
 		return (1);
 	if (chdir(new_path))
 	{
-		printf("minishell: cd: %s: No such file or directory\n", new_path);
+		error_msg("cd: No such file or directory", new_path, 1);
 		free(new_path);
 		return (1);
 	}
@@ -161,9 +161,7 @@ int ft_cd_util(char *current_token, char *cwd, char *new_path, t_minishell *mini
 		current_token = ft_token_with_spaces(minishell);
 		if (chdir(current_token))
 		{
-			write(2, "minishell: cd: ", 15);
-			write(2, current_token, strlen(current_token));
-			write(2, ": No such file or directory\n", 28);
+			error_msg("cd: No such file or directory", current_token, 1);
 			free(cwd);
 			return(1);
 		}

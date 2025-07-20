@@ -80,13 +80,15 @@ static void	execute_child_process(t_minishell *minishell, char **cmd, t_token_li
     }
     if (!path)
     {
-        write(2, "minishell: ", 11);
-        write(2, cmd[0], ft_strlen(cmd[0]));
-        write(2, ": command not found\n", 20);
+        error_msg("command not found", cmd[0], 127);
         exit(127);
     }
     cmd = ft_same_tokens(tmp);
-    execve(path, cmd, make_env_array(minishell));
+    if (execve(path, cmd, make_env_array(minishell)) == -1)
+    {
+        error_errno("execve", 126);
+        exit(126);
+    }
     exit(1);
 }
 
@@ -97,6 +99,11 @@ static int	handle_fork_and_execute(t_minishell *minishell, char **cmd, t_token_l
 
     set_ignore_signals();
     pid = fork();
+    if (pid < 0)
+    {
+        error_errno("fork", 1);
+        return (1);
+    }
     if (pid == 0 && minishell->token_list->token->type == TOKEN_COMMAND)
     {
         execute_child_process(minishell, cmd, &tmp);

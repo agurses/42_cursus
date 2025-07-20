@@ -45,5 +45,7 @@ int		execute_command(t_minishell *minishell);
 void	reset_counts(t_minishell *minishell);
 void	set_ignore_signals(void);
 void	set_default_signals(void);
+void	error_msg(const char *msg, const char *arg, int errcode);
+void	error_errno(const char *msg, int errcode);
 
 #endif
