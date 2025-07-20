@@ -56,9 +56,7 @@ int	ft_unset(t_minishell *minishell, char *current_token)
 		return (0);
 	if (!is_valid_identifier(current_token))
 	{
-		write(2, "minishell: unset: `", 19);
-		write(2, current_token, ft_strlen(current_token));
-		write(2, "': not a valid identifier\n", 26);
+		error_msg("unset: not a valid identifier", current_token, 1);
 		return (1);
 	}
 	prev = NULL;
@@ -129,15 +127,13 @@ static int	handle_space_in_arg(t_minishell *minishell)
     ft_strlcpy(first_part, arg, len + 1);
     if (!is_numeric(first_part))
     {
-        write(2, "minishell: exit: too many arguments\n", 36);
+        error_msg("exit: too many arguments", NULL, 1);
         minishell->exit_status = 1;
         return (1);
     }
     else
     {
-        write(2, "minishell: exit: ", 17);
-        write(2, first_part, len);
-        write(2, ": numeric argument required\n", 28);
+        error_msg("exit: numeric argument required", first_part, 255);
         write(2, "exit\n", 5);
         free_for_exit(minishell);
         exit(255);
@@ -164,11 +160,9 @@ static void	handle_error_exit(t_minishell *minishell, char *tmp)
 {
     write(2, "minishell: exit: ", 17);
     if (!tmp)
-        write(2, minishell->token_list->next->token->value, 
-            ft_strlen(minishell->token_list->next->token->value));
+        error_msg("exit: numeric argument required", minishell->token_list->next->token->value, 255);
     else
-        write(2, tmp, ft_strlen(tmp));
-    write(2, ": numeric argument required\n", 28);
+        error_msg("exit: numeric argument required", tmp, 255);
     write(2, "exit\n", 5);
     free_for_exit(minishell);
     exit(255);

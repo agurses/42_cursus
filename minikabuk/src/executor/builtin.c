@@ -47,7 +47,7 @@ int	ft_pwd()
 	pwd = getcwd(NULL, 0);
 	if (!pwd)
 	{
-		write(2, "Getpwd Failed", 13);
+		error_errno("pwd", 1);
 		return (1);
 	}
 	printf("%s\n", pwd);

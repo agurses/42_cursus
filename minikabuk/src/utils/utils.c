@@ -1,4 +1,5 @@
 #include "minishell.h"
+#include <errno.h>
 
 int	ft_strcmp(const char *s1, const char *s2)
 {
@@ -34,4 +35,26 @@ void	reset_counts(t_minishell *minishell)
 	minishell->count->redir_out_count = 0;
 	minishell->count->append_count = 0;
 	minishell->count->heredoc_count = 0;
+}
+
+void error_msg(const char *msg, const char *arg, int errcode)
+{
+	write(2, "minishell: ", 11);
+	if (msg)
+		write(2, msg, strlen(msg));
+	if (arg)
+	{
+		write(2, ": ", 2);
+		write(2, arg, strlen(arg));
+	}
+	write(2, "\n", 1);
+	errno = errcode;
+}
+
+void error_errno(const char *msg, int errcode)
+{
+	write(2, "minishell: ", 11);
+	if (msg)
+		perror(msg);
+	errno = errcode;
 }

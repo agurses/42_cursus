@@ -166,7 +166,10 @@ int setup_heredoc(char *delimiter)
     char *line;
     
     if (pipe(pipe_fd) == -1)
+    {
+        error_errno("pipe", 1);
         return (-1);
+    }
     while (1)
     {
         line = readline("> ");
@@ -196,7 +199,10 @@ static int	setup_input_redirections(char *input_file, char *heredoc_delim)
     {
         input_fd = setup_heredoc(heredoc_delim);
         if (input_fd == -1)
+        {
+            error_msg("heredoc failed", heredoc_delim, 1);
             return (1);
+        }
         dup2(input_fd, STDIN_FILENO);
         close(input_fd);
     }
@@ -205,7 +211,7 @@ static int	setup_input_redirections(char *input_file, char *heredoc_delim)
         input_fd = open(input_file, O_RDONLY);
         if (input_fd == -1)
         {
-            printf("minishell: %s: No such file or directory\n", input_file);
+            error_errno(input_file, 1);
             return (1);
         }
         dup2(input_fd, STDIN_FILENO);
@@ -223,7 +229,7 @@ static int	setup_output_redirections(char *output_file, char *append_file)
         output_fd = open(append_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
         if (output_fd == -1)
         {
-            printf("minishell: %s: Permission denied\n", append_file);
+            error_errno(append_file, 1);
             return (1);
         }
         dup2(output_fd, STDOUT_FILENO);
@@ -234,7 +240,7 @@ static int	setup_output_redirections(char *output_file, char *append_file)
         output_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (output_fd == -1)
         {
-            printf("minishell: %s: Permission denied\n", output_file);
+            error_errno(output_file, 1);
             return (1);
         }
         dup2(output_fd, STDOUT_FILENO);
@@ -348,7 +354,7 @@ static int	execute_external_command(char **cmd, t_minishell *minishell)
     path = get_path(minishell->envp, cmd[0]);
     if (!path)
     {
-        printf("minishell: %s: command not found\n", cmd[0]);
+        error_msg("command not found", cmd[0], 127);
         return (127);
     }
     pid = fork();
@@ -356,7 +362,7 @@ static int	execute_external_command(char **cmd, t_minishell *minishell)
     {
         if (execve(path, cmd, make_env_array(minishell)) == -1)
         {
-            perror("minishell");
+            error_errno("execve", 126);
             exit(126);
         }
     }
@@ -370,7 +376,7 @@ static int	execute_external_command(char **cmd, t_minishell *minishell)
     }
     else
     {
-        perror("fork");
+        error_errno("fork", 1);
         return (1);
     }
     return (0);
