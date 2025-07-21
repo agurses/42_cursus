@@ -30,7 +30,7 @@ int	is_that_word(t_minishell *minishell, int *i, t_token **current_token, int *c
         if (!*current_token)
             return (0);
         tmp = ft_substr(minishell->input, start, *i - start);
-        if (money_money(minishell, tmp))
+        if (money_money(minishell, &tmp))
                 return (1);
         (*current_token)->value = tmp;
         add_token_to_list(&minishell->token_list, *current_token);

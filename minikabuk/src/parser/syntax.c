@@ -112,27 +112,29 @@ int	money_money_process(t_minishell *minishell, char *tmp, int *j)
 	return (0);		
 }
 
-int	money_money(t_minishell *minishell, char *tmp)
+int	money_money(t_minishell *minishell, char **tmp)
 {
 	int	j;
 
 	j = 0;
-	while (tmp[j])
+	while ((*tmp)[j])
 	{
-		if (tmp[j] == '$')
+		if ((*tmp)[j] == '$')
 		{
-			if (tmp[(j) + 1] && tmp[(j) + 1] == '?')
+			if ((*tmp)[(j) + 1] && (*tmp)[(j) + 1] == '?')
 			{
-				if(money_money_process(minishell, tmp, &j))
+				if(money_money_process(minishell, *tmp, &j))
 					return(1);
-				printf("money money: %s\n", tmp);
+				printf("money money: %s\n", *tmp);
 			}
-			else if (tmp[(j) + 1])
+			else if ((*tmp)[(j) + 1])
 			{
-				tmp = env_expand(minishell, tmp, &j);
-				if (!tmp)
+				char *new_tmp = env_expand(minishell, *tmp, &j);
+				if (!new_tmp)
 					return (1);
-				printf("expand: %s\n", tmp);
+				free(*tmp);
+				*tmp = new_tmp;
+				printf("expand: %s\n", *tmp);
 			}
 		}
 		j++;
