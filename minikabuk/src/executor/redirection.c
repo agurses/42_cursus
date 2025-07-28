@@ -287,6 +287,14 @@ static void	extract_redirect_files(t_token_list *tmp, char **input_file,
 		}
 		else if (tmp->token->type == TOKEN_REDIRECT_OUT && tmp->next)
 		{
+			// Birden fazla output redirect varsa, her birini işle
+			if (*output_file)
+			{
+				// Önceki dosyayı oluştur (boş olsa bile)
+				int temp_fd = open(*output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+				if (temp_fd != -1)
+					close(temp_fd);
+			}
 			*output_file = tmp->next->token->value;
 			tmp = tmp->next;
 		}
