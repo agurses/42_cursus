@@ -24,11 +24,8 @@ void execute_pipe_child(t_minishell *minishell)
 	char *path;
 	struct stat	st;
 
-	if (has_redirect_or_heredoc(minishell))
-	{
-		handle_redirect_or_heredoc(minishell, &minishell->token_list);
-		exit(minishell->exit_status);
-	}
+	// Pipe işlemlerinde redirect'leri sadece son komutta işle
+	// Bu kontrolü processor fonksiyonunda yapacağız
 	cmd = current_token(minishell->token_list);
 	if (!ft_strcmp(cmd[0], "env") || !ft_strcmp(cmd[0], "pwd")
 		|| !ft_strcmp(cmd[0], "echo") || !ft_strcmp(cmd[0], "export")
@@ -102,6 +99,14 @@ static void	setup_pipe_and_fork(t_minishell *minishell, int i, pid_t *pids, int 
             dup2(fd[(i - 1)][0], STDIN_FILENO);
         if (i < minishell->count->pipe_count)
 			dup2(fd[i][1], STDOUT_FILENO);
+        
+        // Redirect'leri sadece son komutta işle
+        if (i == minishell->count->pipe_count && has_redirect_or_heredoc(minishell))
+        {
+            handle_redirect_or_heredoc(minishell, &minishell->token_list);
+            exit(minishell->exit_status);
+        }
+        
         execute_pipe_child(minishell);
     }
 }
