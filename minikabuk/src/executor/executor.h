@@ -45,7 +45,8 @@ int		execute_pipe_line(t_minishell *minishell, int i);
 void     execute_pipe_child(t_minishell *minishell);
 
 //redirection.c
-int	    handle_redirect_or_heredoc(t_minishell *minishell, t_token_list **token_list);
+int		handle_redirect_or_heredoc(t_minishell *minishell, t_token_list **token_list);
+int		handle_redirect_for_current_command(t_minishell *minishell, t_token_list **token_list);
 char	*get_path(t_env *envp, char *cmd);
 void	free_cmd_path(char **cmd_path, int i);
 char	*process_env(t_minishell *minishell, char *cmd, char **cmd_path);
