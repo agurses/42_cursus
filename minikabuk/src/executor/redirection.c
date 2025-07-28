@@ -242,7 +242,7 @@ static int	setup_output_redirections(t_minishell *minishell, char *output_file, 
 			write(2, append_file, ft_strlen(append_file));
 			write(2, ": Permission denied\n", 20);
 			minishell->exit_status = 1;
-			return (1);
+			exit(1);
 		}
 		dup2(output_fd, STDOUT_FILENO);
 		close(output_fd);
@@ -256,7 +256,7 @@ static int	setup_output_redirections(t_minishell *minishell, char *output_file, 
 			write(2, output_file, ft_strlen(output_file));
 			write(2, ": Permission denied\n", 20);
 			minishell->exit_status = 1;
-			return (1);
+			exit(1);
 		}
 		dup2(output_fd, STDOUT_FILENO);
 		close(output_fd);
@@ -372,7 +372,6 @@ static int	execute_external_command(char **cmd, t_minishell *minishell)
     }
     else if(is_dot(cmd))
     {
-        // stat başarısız olduysa
         write(2, "minishell: ", 11);
         write(2, cmd[0], ft_strlen(cmd[0]));
         write(2, ": No such file or directory\n", 28);
@@ -467,5 +466,44 @@ int	handle_redirect_or_heredoc(t_minishell *minishell, t_token_list **token_list
 	dup2(saved_stdout, STDOUT_FILENO);
 	close(saved_stdin);
 	close(saved_stdout);
+	return (ret);
+}
+
+// Function to handle redirects for current command only (up to next pipe)
+int	handle_redirect_for_current_command(t_minishell *minishell, t_token_list **token_list)
+{
+	int		ret;
+	int		saved_stdin;
+	int		saved_stdout;
+	char	*input_file;
+	char	*output_file;
+	char	*append_file;
+	char	*heredoc_delim;
+	t_token_list	*current_cmd_tokens;
+
+	input_file = NULL;
+	output_file = NULL;
+	append_file = NULL;
+	
+	// Create a copy of tokens for current command only (up to next pipe)
+	current_cmd_tokens = *token_list;
+	
+	saved_stdin = dup(STDIN_FILENO);
+	saved_stdout = dup(STDOUT_FILENO);
+	
+	// Extract redirect files for current command only
+	extract_redirect_files(current_cmd_tokens, &input_file, &output_file, &append_file);
+	heredoc_delim = extract_heredoc_delim(current_cmd_tokens);
+	
+	ret = setup_all_redirections(minishell, input_file, output_file, append_file, heredoc_delim);
+	if (ret == 0)
+		ret = execute_redirect_herodoc_child(minishell);
+	
+	// Restore original file descriptors
+	dup2(saved_stdin, STDIN_FILENO);
+	dup2(saved_stdout, STDOUT_FILENO);
+	close(saved_stdin);
+	close(saved_stdout);
+	
 	return (ret);
 }
