@@ -4,7 +4,7 @@ CC = cc
 CFLAGS = -Wall -Wextra -Werror -g -I $(SRC_DIR) -I \
 		$(ENV_DIR) -I $(EXECUTOR_DIR) -I $(PARSER_DIR) -I \
 		$(SIGNAL_DIR) -I $(UTILS_DIR) -I $(LIBFT_DIR) \
-		-I include/ -I/opt/homebrew/opt/readline/include
+		-I include/ -I/usr/include/readline
 
 HEADERS =	include/minishell.h \
 			src/parser/parser.h \
@@ -66,7 +66,7 @@ $(LIBFT) :
 	make bonus -C $(LIBFT_DIR)
 
 $(NAME) : $(LIBFT) $(PRINTF) $(OBJS)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LIBFT) -L/opt/homebrew/opt/readline/lib -lreadline
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LIBFT) -lreadline
 
 clean :
 	rm -rf $(OBJS)
