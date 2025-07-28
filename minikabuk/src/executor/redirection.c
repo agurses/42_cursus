@@ -233,7 +233,23 @@ static int	setup_output_redirections(t_minishell *minishell, char *output_file, 
 {
 	int	output_fd;
 
-	if (append_file)
+	// Hem append hem output varsa, sadece sonuncusunu işle (son redirect öncelikli)
+	if (append_file && output_file)
+	{
+		// Son redirect output_file olduğu için onu işle
+		output_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (output_fd == -1)
+		{
+			write(2, "minishell: ", 11);
+			write(2, output_file, ft_strlen(output_file));
+			write(2, ": Permission denied\n", 20);
+			minishell->exit_status = 1;
+			return (1);
+		}
+		dup2(output_fd, STDOUT_FILENO);
+		close(output_fd);
+	}
+	else if (append_file)
 	{
 		output_fd = open(append_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 		if (output_fd == -1)
@@ -296,11 +312,15 @@ static void	extract_redirect_files(t_token_list *tmp, char **input_file,
 					close(temp_fd);
 			}
 			*output_file = tmp->next->token->value;
+			// Output redirect varsa append'i temizle (son redirect öncelikli)
+			*append_file = NULL;
 			tmp = tmp->next;
 		}
 		else if (tmp->token->type == TOKEN_APPEND && tmp->next)
 		{
 			*append_file = tmp->next->token->value;
+			// Append varsa output'u temizle (son redirect öncelikli)
+			*output_file = NULL;
 			tmp = tmp->next;
 		}
 		tmp = tmp->next;
