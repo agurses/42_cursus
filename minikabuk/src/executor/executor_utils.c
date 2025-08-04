@@ -389,28 +389,36 @@ char **ft_same_tokens(t_token_list **tmp)
 }
 int	ft_echo_from_cmd_array(char **cmd)
 {
-    int i = 1;
-    int no_newline = 0;
-    int first = 1;
+	int i = 1;
+	int no_newline = 0;
+	int first = 1;
 
-    if (cmd[1] && !ft_strcmp(cmd[1], "-n"))
-    {
-        no_newline = 1;
-        i = 2;
-    }
-    while (cmd[i] &&
-        ft_strcmp(cmd[i], ">>") != 0 &&
-        ft_strcmp(cmd[i], ">") != 0 &&
-        ft_strcmp(cmd[i], "<") != 0 &&
-        ft_strcmp(cmd[i], "<<") != 0)
-    {
-        if (!first)
-            write(1, " ", 1);
-        write(1, cmd[i], ft_strlen(cmd[i]));
-        first = 0;
-        i++;
-    }
-    if (!no_newline)
-        write(1, "\n", 1);
-    return (0);
+	while (cmd[i] && cmd[i][0] == '-' && cmd[i][1] == 'n')
+	{
+		int j = 2;
+		while (cmd[i][j] == 'n')
+			j++;
+		if (cmd[i][j] == '\0')
+		{
+			no_newline = 1;
+			i++;
+		}
+		else
+			break;
+	}
+	while (cmd[i] &&
+		ft_strcmp(cmd[i], ">>") != 0 &&
+		ft_strcmp(cmd[i], ">") != 0 &&
+		ft_strcmp(cmd[i], "<") != 0 &&
+		ft_strcmp(cmd[i], "<<") != 0)
+	{
+		if (!first)
+			write(1, " ", 1);
+		write(1, cmd[i], ft_strlen(cmd[i]));
+		first = 0;
+		i++;
+	}
+	if (!no_newline)
+		write(1, "\n", 1);
+	return (0);
 }

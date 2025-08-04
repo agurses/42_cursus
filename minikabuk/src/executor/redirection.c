@@ -72,10 +72,10 @@ void	malloc_pid_redirect(int ***fd, pid_t **pids, t_minishell *minishell)
 	int	i;
 
 	i = 0;
-	*pids = (pid_t *)ft_calloc(sizeof(pid_t), (minishell->count->redir_in_count +
-												minishell->count->redir_out_count +
-												minishell->count->append_count +
-												minishell->count->heredoc_count + 1));
+	*pids = ft_calloc(sizeof(pid_t), (minishell->count->redir_in_count
+										+ minishell->count->redir_out_count
+										+ minishell->count->append_count
+										+ minishell->count->heredoc_count + 1));
 	if (!*pids)
 		return;
 	*fd = (int **)ft_calloc(2, sizeof(int *));
@@ -167,51 +167,86 @@ char	**extract_clean_command(t_token_list *token_list)
 	return (cmd_args);
 }
 
-int setup_heredoc(char *delimiter)
+int	heredoc_child(t_minishell *ms, char	*del, int pipe_fd)
 {
-	int pipe_fd[2];
-	char *line;
-	
-	if (pipe(pipe_fd) == -1)
-		return (-1);
+	char	*line;
+	int		tty_fd;
+
+	(void)ms;
+	set_default_signals();
+	tty_fd = open("/dev/tty", O_RDWR);
+	if (tty_fd != -1)
+	{
+		dup2(tty_fd, STDIN_FILENO);
+		dup2(tty_fd, STDOUT_FILENO);
+		close(tty_fd);
+	}
 	while (1)
 	{
 		line = readline("> ");
 		if (!line)
-			break;
-		if (ft_strcmp(line, delimiter) == 0)
+		{
+			write(2, "warning: heredoc delimited by EOF\n", 35);
+			close(pipe_fd);
+			exit(1);
+		}
+		else if (ft_strcmp(line, del) == 0)
 		{
 			free(line);
-			break;
+			close(pipe_fd);
+			exit(0);
 		}
-		write(pipe_fd[1], line, ft_strlen(line));
-		write(pipe_fd[1], "\n", 1);
+		ft_putstr_fd(line, pipe_fd);
+		ft_putstr_fd("\n", pipe_fd);
 		free(line);
 	}
-	close(pipe_fd[1]);
-	return (pipe_fd[0]);
+}
+
+int setup_heredoc(t_minishell *ms, char *delimiter)
+{
+	int		pipe_fd;
+	pid_t	pid;
+	int		status;
+
+	pipe_fd = open(".heredoc", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (pipe_fd == -1)
+		return (-1);
+	pid = fork();
+	if (pid == 0)
+		heredoc_child(ms, delimiter, pipe_fd);
+	else if(pid > 0)
+	{
+		set_ignore_signals();
+		waitpid(pid, &status, 0);
+		signal(SIGINT, simple_signal_handler);
+		close(pipe_fd);
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
+		{
+			ms->exit_status = 130;
+			unlink(".heredoc");
+			return (-1);
+		}
+		pipe_fd = open(".heredoc", O_RDONLY);
+	    if (pipe_fd == -1)
+            return (-1);
+		unlink(".heredoc");
+        return (pipe_fd);
+	}
+	else
+	{
+		perror("fork");
+		close(pipe_fd);
+		return (-1);
+	}
+	return (-1);
 }
 
 ///////////////////////////////
 
-static int	setup_input_redirections(t_minishell *minishell, char *input_file, char *heredoc_delim)
+static int	setup_input_redirections(t_minishell *minishell, char *input_file)
 {
 	int	input_fd;
 
-	if (heredoc_delim)
-	{
-		input_fd = setup_heredoc(heredoc_delim);
-		if (input_fd == -1)
-		{
-		    write(2, "minishell: ", 11);
-		    write(2, input_file, ft_strlen(input_file));
-		    write(2, ": No such file or directory\n", 28);
-			minishell->exit_status = 1;
-		    exit (1);
-		}
-		dup2(input_fd, STDIN_FILENO);
-		close(input_fd);
-	}
 	if (input_file)
 	{
 		input_fd = open(input_file, O_RDONLY);
@@ -229,39 +264,37 @@ static int	setup_input_redirections(t_minishell *minishell, char *input_file, ch
 	return (0);
 }
 
-// En son output redirect'ı ve tipini bulur
 void extract_last_output_redirect(t_token_list *tmp, char **last_file, int *is_append)
 {
-    *last_file = NULL;
-    *is_append = 0;
-    while (tmp && tmp->token->type != TOKEN_PIPE)
-    {
-        if ((tmp->token->type == TOKEN_REDIRECT_OUT || tmp->token->type == TOKEN_APPEND) && tmp->next)
-        {
-            *last_file = tmp->next->token->value;
-            *is_append = (tmp->token->type == TOKEN_APPEND);
-            tmp = tmp->next;
-        }
-        tmp = tmp->next;
-    }
+	*last_file = NULL;
+	*is_append = 0;
+	while (tmp && tmp->token->type != TOKEN_PIPE)
+	{
+		if ((tmp->token->type == TOKEN_REDIRECT_OUT || tmp->token->type == TOKEN_APPEND) && tmp->next)
+		{
+			*last_file = tmp->next->token->value;
+			*is_append = (tmp->token->type == TOKEN_APPEND);
+			tmp = tmp->next;
+		}
+		tmp = tmp->next;
+	}
 }
 
 static int	setup_output_redirections(t_minishell *minishell)
 {
-    // Bu fonksiyonun parametrelerini kullanmak yerine, en son redirect'ı bul:
-    char *last_file = NULL;
-    int is_append = 0;
+    char	*last_file;
+    int		is_append;
+	int		output_fd;
 
+	last_file = NULL;
+	is_append = 0;
     extract_last_output_redirect(minishell->token_list, &last_file, &is_append);
-
     if (last_file)
     {
-        int output_fd;
         if (is_append)
             output_fd = open(last_file, O_WRONLY | O_CREAT | O_APPEND, 0644);
         else
             output_fd = open(last_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
         if (output_fd == -1)
         {
             write(2, "minishell: ", 11);
@@ -276,18 +309,17 @@ static int	setup_output_redirections(t_minishell *minishell)
     return (0);
 }
 
-int	setup_all_redirections(t_minishell *minishell, char *input_file, char *heredoc_delim)
+int	setup_all_redirection(t_minishell *ms, char *input_file)
 {
-	if (setup_input_redirections(minishell, input_file, heredoc_delim))
+	ms->exit_status = setup_input_redirections(ms, input_file);
+	if (ms->exit_status)
 		return (1);
-	if (setup_output_redirections(minishell))
+	if (setup_output_redirections(ms))
 		return (1);
 	return (0);
 }
 
-/////////////////////////////
-///////////////BUNA BAKMAN LAZIM  BURADADDA BURADAATIYZ
-static void	extract_redirect_files(t_token_list *tmp, char **input_file, 
+int	extract_redirect_files(t_token_list *tmp, char **input_file, 
                                 char **output_file, char **append_file)
 {
     while (tmp && tmp->token->type != TOKEN_PIPE)
@@ -300,7 +332,7 @@ static void	extract_redirect_files(t_token_list *tmp, char **input_file,
                 write(2, "minishell: ", 11);
                 write(2, tmp->next->token->value, ft_strlen(tmp->next->token->value));
                 write(2, ": No such file or directory\n", 28);
-                exit(1);
+                return(1);
             }
             close(fd);
             *input_file = tmp->next->token->value;
@@ -314,7 +346,7 @@ static void	extract_redirect_files(t_token_list *tmp, char **input_file,
                 write(2, "minishell: ", 11);
                 write(2, tmp->next->token->value, ft_strlen(tmp->next->token->value));
                 write(2, ": Permission denied\n", 20);
-                exit(1);
+                return(1);
             }
             close(fd);
             *output_file = tmp->next->token->value;
@@ -328,7 +360,7 @@ static void	extract_redirect_files(t_token_list *tmp, char **input_file,
                 write(2, "minishell: ", 11);
                 write(2, tmp->next->token->value, ft_strlen(tmp->next->token->value));
                 write(2, ": Permission denied\n", 20);
-                exit(1);
+                return(1);
             }
             close(fd);
             *append_file = tmp->next->token->value;
@@ -336,22 +368,35 @@ static void	extract_redirect_files(t_token_list *tmp, char **input_file,
         }
         tmp = tmp->next;
     }
+	return (0);
 }
 
 static char	*extract_heredoc_delim(t_token_list *tmp)
 {
-	while (tmp)
+	while (tmp && tmp->token->type != TOKEN_PIPE)
 	{
 		if (tmp->token->type == TOKEN_HEREDOC && tmp->next)
-		{
 			return (tmp->next->token->value);
-		}
 		tmp = tmp->next;
 	}
 	return (NULL);
 }
 
-///////////////////////////////////////////////////
+int     handle_heredoc(t_minishell *ms)
+{
+        char    *delim;
+        int             fd;
+
+        delim = extract_heredoc_delim(ms->token_list);
+        if (!delim)
+                return (0);
+        fd = setup_heredoc(ms, delim);
+        if (fd == -1)
+                return (1);
+        dup2(fd, STDIN_FILENO);
+        close(fd);
+        return (0);
+}
 
 static int	execute_builtin_with_redirect(char **cmd, t_minishell *minishell)
 {
@@ -401,7 +446,6 @@ static int	execute_external_command(char **cmd, t_minishell *minishell)
     }
     else if(is_dot(cmd))
     {
-        // stat başarısız olduysa
         write(2, "minishell: ", 11);
         write(2, cmd[0], ft_strlen(cmd[0]));
         write(2, ": No such file or directory\n", 28);
@@ -441,60 +485,56 @@ static int	execute_external_command(char **cmd, t_minishell *minishell)
 	return (minishell->exit_status);
 }
 
-int	execute_redirect_herodoc_child(t_minishell *minishell)
+int	execute_redirect_child(t_minishell *minishell)
 {
 	char	**cmd;
 	int		ret;
+	int		i;
 
+	i = 0;
 	cmd = extract_clean_command(minishell->token_list);
 	if (!cmd || !cmd[0])
 		return (1);
-	if (!ft_strcmp(cmd[0], "env") || !ft_strcmp(cmd[0], "pwd") ||
-		!ft_strcmp(cmd[0], "echo") || !ft_strcmp(cmd[0], "cd") ||
-		!ft_strcmp(cmd[0], "export") || !ft_strcmp(cmd[0], "unset") ||
-		!ft_strcmp(cmd[0], "exit"))
-	{
+	if (!ft_strcmp(cmd[0], "env") || !ft_strcmp(cmd[0], "pwd")
+		|| !ft_strcmp(cmd[0], "echo") || !ft_strcmp(cmd[0], "cd")
+		|| !ft_strcmp(cmd[0], "export") || !ft_strcmp(cmd[0], "unset")
+		|| !ft_strcmp(cmd[0], "exit"))
 		ret = execute_builtin_with_redirect(cmd, minishell);
-	}
 	else
-	{
 		ret = execute_external_command(cmd, minishell);
-	}
-	for (int i = 0; cmd[i]; i++)
-		free(cmd[i]);
+	while (cmd[i])
+		free(cmd[i++]);
 	free(cmd);
 	return (ret);
 }
 
-int	handle_redirect_or_heredoc(t_minishell *minishell, t_token_list **token_list)
+int	handle_redirect(t_minishell *ms, t_token_list **token_list)
 {
-	int		**fd;
-	pid_t	*pids;
-	int		ret;
-	int		saved_stdin;
-	int		saved_stdout;
-	char	*input_file;
-	char	*output_file;
-	char	*append_file;
-	char	*heredoc_delim;
+	int			**fd;
+	pid_t		*pids;
+	int			saved_stdin;
+	int			saved_stdout;
+	t_red_files	files;
 
-
-	input_file = NULL;
-	output_file = NULL;
-	append_file = NULL;
-	malloc_pid_redirect(&fd, &pids, minishell);
+	files.input = NULL;
+	files.output = NULL;
+	files.append = NULL;
+	malloc_pid_redirect(&fd, &pids, ms);
 	if (!fd || !pids)
 		return (1);
 	saved_stdin = dup(STDIN_FILENO);
 	saved_stdout = dup(STDOUT_FILENO);	
-	extract_redirect_files(*token_list, &input_file, &output_file, &append_file);
-	heredoc_delim = extract_heredoc_delim(*token_list);
-	ret = setup_all_redirections(minishell, input_file, heredoc_delim);
-	if (ret == 0)
-		ret = execute_redirect_herodoc_child(minishell);
+	ms->exit_status = extract_redirect_files(*token_list, &files.input, &files.output, &files.append);
+	if (ms->exit_status != 0)
+		return (ms->exit_status);
+	ms->exit_status = setup_all_redirection(ms, files.input);
+	if (ms->exit_status == 0)
+		ms->exit_status = execute_redirect_child(ms);
 	dup2(saved_stdin, STDIN_FILENO);
 	dup2(saved_stdout, STDOUT_FILENO);
 	close(saved_stdin);
 	close(saved_stdout);
-	return (ret);
+	free(pids);
+	free(fd);
+	return (ms->exit_status);
 }
