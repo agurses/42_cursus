@@ -36,8 +36,16 @@ static int	create_and_add_token(t_minishell *ms,
 	if (*tok == NULL)
 		return (0);
 	tmp = ft_substr(ms->input, start, end - start);
-	if (money_money(ms, &tmp))
-		return (1);
+	if (money_money(ms, &tmp)) {
+        free(tmp);
+        free(*tok);
+        return (0); // Hata kodu döndürme, sadece token ekleme!
+    }
+    if (tmp[0] == '\0') {
+        free(tmp);
+        free(*tok);
+        return (1); // Boşsa token ekleme, hata kodu döndürme!
+    }
 	(*tok)->value = ft_strdup(tmp);
 	free(tmp);
 	add_token_to_list(&ms->token_list, *tok);

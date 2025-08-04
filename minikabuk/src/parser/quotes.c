@@ -41,6 +41,14 @@ static int	sqm(t_minishell *ms, int *i, t_token **current_token, int j)
 		(*i)++;
 		return (0);
 	}
+	// Check if next character after quote is a pipe or redirect
+	if (ms->input[*i + 1] == '|' || ms->input[*i + 1] == '<' 
+		|| ms->input[*i + 1] == '>')
+	{
+		add_token_to_list(&ms->token_list, *current_token);
+		(*i)++;
+		return (0);
+	}
 	if (ms->input[j - 1] != ' ')
 	{
 		merge_with_previous_token(ms, current_token);
@@ -52,7 +60,9 @@ static int	sqm(t_minishell *ms, int *i, t_token **current_token, int j)
 				(*i)++;
 		}
 	}
-	else if ((ms->input[*i + 1] != ' ' && ms->input[*i + 1] != '\0'))
+	else if ((ms->input[*i + 1] != ' ' && ms->input[*i + 1] != '\0' 
+		&& ms->input[*i + 1] != '|' && ms->input[*i + 1] != '<' 
+		&& ms->input[*i + 1] != '>'))
 	{
 		remove_quotes_from_input(ms, j, *i);
 		*i = j - 2;

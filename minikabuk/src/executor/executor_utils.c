@@ -404,21 +404,21 @@ int	ft_echo_from_cmd_array(char **cmd)
 			i++;
 		}
 		else
-			break;
+		    break;
 	}
 	while (cmd[i] &&
-		ft_strcmp(cmd[i], ">>") != 0 &&
-		ft_strcmp(cmd[i], ">") != 0 &&
-		ft_strcmp(cmd[i], "<") != 0 &&
-		ft_strcmp(cmd[i], "<<") != 0)
+	    ft_strcmp(cmd[i], ">>") != 0 &&
+	    ft_strcmp(cmd[i], ">") != 0 &&
+	    ft_strcmp(cmd[i], "<") != 0 &&
+	    ft_strcmp(cmd[i], "<<") != 0)
 	{
-		if (!first)
-			write(1, " ", 1);
-		write(1, cmd[i], ft_strlen(cmd[i]));
-		first = 0;
-		i++;
+	    if (!first)
+	        write(1, " ", 1);
+	    write(1, cmd[i], ft_strlen(cmd[i]));
+	    first = 0;
+	    i++;
 	}
 	if (!no_newline)
-		write(1, "\n", 1);
+	    write(1, "\n", 1);
 	return (0);
 }
