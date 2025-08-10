@@ -46,13 +46,13 @@ void	*philosopher_routine(void *arg)
 		usleep(100);
 	while (1)
 	{
-		pthread_mutex_lock(&philo->data->death_mutex);
+		//pthread_mutex_lock(&philo->data->death_mutex);
 		if (philo->data->any_philosopher_died == 1)
 		{
-			pthread_mutex_unlock(&philo->data->death_mutex);
+			//pthread_mutex_unlock(&philo->data->death_mutex);
 			break;
 		}
-		pthread_mutex_unlock(&philo->data->death_mutex);
+		//pthread_mutex_unlock(&philo->data->death_mutex);
 		if (philo->data->number_of_times_each_philosopher_must_eat != -1 
 			&& philo->meal_eaten >= philo->data->number_of_times_each_philosopher_must_eat)
 			break;
@@ -74,19 +74,19 @@ int start_simulation(t_philo *philosophers)
 	while (++i < count)
 	{
 		philosophers[i].last_meal_time = get_time();
-		if (pthread_create(&philosophers[i].thread_id, NULL, philosopher_routine, &philosophers[i]) != 0)
+		if (pthread_create(&philosophers[i].thread_id, NULL, philosopher_routine, &philosophers[i]) != 0) ////// buna çalış
 		{
 			printf("Philosopher Create Thread Error\n");
 			return (1);
 		}
 	}
-	i = -1;
 	if (pthread_create(&monitor_id, NULL,death_monitor, philosophers) != 0)
 	{
 		printf("Monitoring Create Thread Error\n");
 		return (1);
 	}
 	pthread_detach(monitor_id);
+	i = -1;
 	while (++i < count)
 		pthread_join(philosophers[i].thread_id, NULL);
 	return (0);

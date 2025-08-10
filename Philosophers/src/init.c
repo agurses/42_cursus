@@ -1,15 +1,20 @@
 #include "philo.h"
 
-int	init_other_mutex(t_philo **philosophers)
+void	fill_philosophers(t_philo ** philosophers, int philo_count)
 {
-	if (pthread_mutex_init(&((*philosophers)->data->write_mutex), NULL) != 0)
-		return (1);
-	if (pthread_mutex_init(&((*philosophers)->data->death_mutex), NULL) != 0)
-	{
-		pthread_mutex_destroy(&((*philosophers)->data->write_mutex));
-		return (1);
+	int i;
+
+	i = 0;
+	while (i < philo_count)
+    {
+		(*philosophers)[i].id = i + 1;
+		(*philosophers)[i].meal_eaten = 0;
+		(*philosophers)[i].last_meal_time = 0;
+		(*philosophers)[i].data = (*philosophers)[0].data;
+		(*philosophers)[i].left_fork = &((*philosophers)->data->forks[i]);
+		(*philosophers)[i].right_fork = &((*philosophers)->data->forks[(i + 1) % philo_count]);
+		i++;
 	}
-	return (0);
 }
 
 int	init_forks(t_philo **philosophers, char **argv)
@@ -41,21 +46,16 @@ int	init_forks(t_philo **philosophers, char **argv)
 	return (0);
 }
 
-void	fill_philosophers(t_philo ** philosophers, int philo_count)
+int	init_other_mutex(t_philo **philosophers)
 {
-	int i;
-
-	i = 0;
-	while (i < philo_count)
-    {
-		(*philosophers)[i].id = i + 1;
-		(*philosophers)[i].meal_eaten = 0;
-		(*philosophers)[i].last_meal_time = 0;
-		(*philosophers)[i].data = (*philosophers)[0].data;
-		(*philosophers)[i].left_fork = &((*philosophers)->data->forks[i]);
-		(*philosophers)[i].right_fork = &((*philosophers)->data->forks[(i + 1) % philo_count]);
-		i++;
+	if (pthread_mutex_init(&((*philosophers)->data->write_mutex), NULL) != 0)
+		return (1);
+	if (pthread_mutex_init(&((*philosophers)->data->death_mutex), NULL) != 0)
+	{
+		pthread_mutex_destroy(&((*philosophers)->data->write_mutex));
+		return (1);
 	}
+	return (0);
 }
 
 int	init_data(t_philo **philosophers, char **argv)

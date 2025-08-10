@@ -47,8 +47,8 @@ void	*death_monitor(void *arg)
 	eat_time = philo->data->num_philosophers.time_to_die;
 	while (1)
 	{
-		i = 0;
-		while (i < count)
+		i = -1;
+		while (++i < count)
 		{
 			if ((get_time() - philo[i].last_meal_time) > eat_time)
 			{
@@ -58,7 +58,6 @@ void	*death_monitor(void *arg)
 				pthread_mutex_unlock(&philo->data->death_mutex);
 				return (NULL);
 			}
-			i++;
 		}
 		usleep(1000);
 	}
